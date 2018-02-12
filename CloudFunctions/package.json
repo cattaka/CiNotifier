@@ -1,0 +1,24 @@
+{
+  "name": "ci_notifier",
+  "version": "0.1.0",
+  "description": "ci_notifier",
+  "dependencies": {
+    "promise-retry": "^1.1.1",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
+  },
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cattaka/CiNotifier.git"
+  },
+  "author": "cattaka",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://github.com/cattaka/CiNotifier/issues"
+  },
+  "homepage": "https://github.com/cattaka/CiNotifier#readme"
+}
