@@ -64,14 +64,15 @@ function create_promise(settings, branch_name, build_state_value) {
     // =====================================
     // Command for branch_name
     var p = 0;
-    while (p < branch_name.length) {
+    var sbn = shorten_branch_name(branch_name);
+    while (p < sbn.length) {
       // NOTE: Only use lower 53 bit(6byte) because there are limitation of JavaScript
-      var t = Math.min(p+6, branch_name.length);
+      var t = Math.min(p+6, sbn.length);
       var data = 0;
       for (var i=t-1;i>=p;i--) {
-        console.log("C : " + i + " : " + branch_name.charAt(i));
+        console.log("C : " + i + " : " + sbn.charAt(i));
         // Do not use bit shift because JavaScript is weird about it!
-        data = (data * 256) + (0xFF & branch_name.codePointAt(i));
+        data = (data * 256) + (0xFF & sbn.codePointAt(i));
       }
       console.log("D : " + data.toString(16));
       channelsJson.push({
@@ -119,4 +120,18 @@ function create_promise(settings, branch_name, build_state_value) {
     });
   });
   return Promise.all(promises);
+}
+
+
+function shorten_branch_name(branch_name) {
+  var strs = branch_name.split("/");
+  var t;
+  if (strs.length <= 1) {
+    t = branch_name;
+  } else {
+    var t1 = strs[strs.length - 2];
+    var t2 = strs[strs.length - 1];
+    t = t1.substring(0, 3) + "/" + t2;
+  }
+  return t.substring(0, 16);
 }
