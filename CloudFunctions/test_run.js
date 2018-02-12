@@ -1,19 +1,20 @@
 var sup = require('./index.js');
 var settings = require('./settings.json');
 
-if (process.argv.length < 4) {
+if (process.argv.length < 5) {
     console.log("Usage: test_run <passphrase> <branch_name> <build_state>")
     process.exit(1);
 }
 
 var req = {
   "query": {
-    "passphrase": process.argv[1],
-    "branch_name": process.argv[2],
-    "passphrase": process.argv[3],
+    "passphrase": process.argv[2],
+    "branch_name": process.argv[3],
+    "build_state": process.argv[4],
   }
 }
-var req = {
+
+var res = {
   "status": function(code) {
     console.log("status_code : " + code);
     return {

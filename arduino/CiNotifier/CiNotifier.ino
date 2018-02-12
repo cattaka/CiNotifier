@@ -88,8 +88,8 @@ void rainbow(uint16_t intervalMsec, uint16_t loopCount) {
 }
 
 void animColor(byte* values, int from, int to) {
-  int d = (from < to) ? 1 : -1;
-  for (int i = from; i != to; i += d) {
+  int i = from;
+  do {
     uint8_t v = values[i];
     setColor(
       (v & 0b00110000) << 2,
@@ -97,7 +97,11 @@ void animColor(byte* values, int from, int to) {
       (v & 0b00000011) << 6
     );
     delay((((v & 0b11000000) >> 6) + 1) * 250);
-  }
+    if (i == to) {
+      break;
+    }
+    i += (i < to) ? 1 : -1;
+  } while (true);
   setColor(0, 0, 0);
 }
 
@@ -213,7 +217,7 @@ void loop() {
 
       if (channel == CHANNEL_PART_STR) {
         int endIdx = (type == 'L') ? 5 : 7;
-        for (int i = endIdx; i >= 0 && (gPartStrIdx < sizeof(gPartStrBuf) - 1); i--) {
+        for (int i = 0; i <= endIdx && (gPartStrIdx < sizeof(gPartStrBuf) - 1); i++) {
           gPartStrBuf[gPartStrIdx] = values[i];
           gPartStrIdx++;
         }
