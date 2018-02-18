@@ -166,8 +166,8 @@ void setup()
   printLcd(0, 0, "CI Notifier", 20);
   printLcd(0, 1, "initializing...", 20);
   for (;;) {
-    if ( (sakuraio.getConnectionStatus() & 0x80) == 0x80 ) break;
     rainbow(600, 1);
+    if ( (sakuraio.getConnectionStatus() & 0x80) == 0x80 ) break;
   }
   printLcd(0, 1, "initializing...done", 20);
   animColor(BOOT_COLOR, 0, sizeof(BOOT_COLOR) / sizeof(BOOT_COLOR[0]));
