@@ -3,21 +3,35 @@
  */
 const supported_build_state = {
   "building": {
-    "value": 1,
+    "text": "...",
     "blinks": [
-      0x0000FCFCC0FCC0FC
+      "3C003C003C00FCFC"
     ]
   },
-  "succeed": {
-    "value": 2,
+  "succeed_b": {
+    "text": "SUC",
     "blinks": [
-      0x0000C3C3C0C3C0C3
+      "030003000300C3C3"
+    ]
+  },
+  "succeed_g": {
+    "text": "SUC",
+    "blinks": [
+      "0C000C000C00CCCC"
+    ]
+  },
+  "succeed_rgb": {
+    "text": "SUC",
+    "blinks": [
+      "3024180C09060312",
+      "213024180C090603",
+      "12213024180C0906"
     ]
   },
   "error": {
-    "value": 3,
+    "text": "ERR",
     "blinks": [
-      0x0000F0F0C0F0C0F0
+      "300030003000f0f0"
     ]
   },
 };
@@ -44,7 +58,7 @@ exports.ci_notifier = (req, res) => {
     ).then(function() {
       res.status(200).send('Success');
     }).catch(function(e) {
-      console.error(e);
+      // console.error(e);
       res.status(200).send('Error: ' + e);
     });
   }
@@ -66,18 +80,12 @@ function create_promise(settings, branch_name, build_state_value) {
     var p = 0;
     var sbn = shorten_branch_name(branch_name);
     while (p < sbn.length) {
-      // NOTE: Only use lower 53 bit(6byte) because there are limitation of JavaScript
-      var t = Math.min(p+6, sbn.length);
-      var data = 0;
-      for (var i=t-1;i>=p;i--) {
-        console.log("C : " + i + " : " + sbn.charAt(i));
-        // Do not use bit shift because JavaScript is weird about it!
-        data = (data * 256) + (0xFF & sbn.codePointAt(i));
-      }
-      console.log("D : " + data.toString(16));
+      var t = Math.min(p+8, sbn.length);
+      var data = str_to_hex_text(sbn.substring(p, t));
+      // console.log("D : " + data);
       channelsJson.push({
           "channel": 1,
-          "type": "L",
+          "type": "b",
           "value": data
       });
       p = t;
@@ -86,15 +94,15 @@ function create_promise(settings, branch_name, build_state_value) {
     // Command for commit branch_name and build_state
     channelsJson.push({
         "channel": 0,
-        "type": "L",
-        "value": build_state_value.value
+        "type": "b",
+        "value": str_to_hex_text(build_state_value.text)
     });
     // =====================================
     // Command for blink
     build_state_value.blinks.forEach(function(blink) {
       channelsJson.push({
           "channel": 2,
-          "type": "L",
+          "type": "b",
           "value": blink
       });
     });
@@ -114,7 +122,7 @@ function create_promise(settings, branch_name, build_state_value) {
         },
         "json": bodyJson
     };
-    console.log(JSON.stringify(bodyJson));
+    // console.log(JSON.stringify(bodyJson));
     return promiseRetry(retry_options, function (retry, number) {
         return rp(options).catch(retry);
     });
@@ -134,4 +142,17 @@ function shorten_branch_name(branch_name) {
     t = t1.substring(0, 3) + "/" + t2;
   }
   return t.substring(0, 16);
+}
+
+function str_to_hex_text(str) {
+  var data = "";
+  for (var i = 0;i < 8 && i < str.length;i++) {
+    var ch = str.codePointAt(i);
+    ch = (ch < 0x10) ? "0" + ch.toString(16) : ch.toString(16);
+    data += ch;
+  }
+  while (data.length < 16) {
+    data += "0";
+  }
+  return data.toUpperCase();
 }

@@ -7,6 +7,7 @@
 #define PIN_B 6
 #define LCD_LINES 4
 #define MAX_NAME_LEN 16
+#define MAX_BUILD_STATE_LEN 3
 
 #define CHANNEL_CMD        0
 #define CHANNEL_PART_STR   1
@@ -20,16 +21,9 @@ const uint8_t BOOT_COLOR[] = {
   0b00111111
 };
 
-enum BuildState {
-  UNKNOWN = 0,
-  BUILDING = 1,
-  SUCCEED = 2,
-  ERROR = 3
-};
-
 typedef struct _BranchState {
   char branchName[MAX_NAME_LEN + 1];
-  BuildState buildState;
+  char buildState[MAX_BUILD_STATE_LEN + 1];
 } BranchState;
 
 LiquidCrystal lcd(10);
@@ -107,10 +101,10 @@ void animColor(byte* values, int from, int to) {
 
 void refreshLcdLine(int i) {
   printLcd(0, i, gBranchStatus[i].branchName, MAX_NAME_LEN + 1);
-  BuildState s = gBranchStatus[i].buildState;
+  char *s = gBranchStatus[i].buildState;
   int col = MAX_NAME_LEN + 1;
 
-  if (s == BUILDING) {
+  if (strcmp(s, "...") == 0) {
     switch (gLoopCount % 4) {
       case 0:
         printLcd(col, i, "", 3);
@@ -125,12 +119,8 @@ void refreshLcdLine(int i) {
         printLcd(col, i, "...", 3);
         break;
     }
-  } else if (s == SUCCEED) {
-    printLcd(col, i, "SUC", 3);
-  } else if (s == ERROR) {
-    printLcd(col, i, "ERR", 3);
   } else {
-    printLcd(col, i, "", 3);
+    printLcd(col, i, s, 3);
   }
 }
 
@@ -141,7 +131,7 @@ void refreshLcd() {
   }
 }
 
-void updateBranchState(char* branchName, BuildState buildState) {
+void updateBranchState(char* branchName, char* buildState) {
   int n = sizeof(gBranchStatus) / sizeof(gBranchStatus[0]);
   int t = n - 1;
   for (int i = 0; i < n; i++) {
@@ -154,7 +144,7 @@ void updateBranchState(char* branchName, BuildState buildState) {
     gBranchStatus[i] = gBranchStatus[i - 1];
   }
   strncpy(gBranchStatus[0].branchName, branchName, MAX_NAME_LEN);
-  gBranchStatus[0].buildState = buildState;
+  strncpy(gBranchStatus[0].buildState, buildState, MAX_BUILD_STATE_LEN);
 
   refreshLcd();
 }
@@ -216,22 +206,18 @@ void loop() {
 #endif
 
       if (channel == CHANNEL_PART_STR) {
-        int endIdx = (type == 'L') ? 5 : 7;
+        int endIdx = 7;
         for (int i = 0; i <= endIdx && (gPartStrIdx < sizeof(gPartStrBuf) - 1); i++) {
           gPartStrBuf[gPartStrIdx] = values[i];
           gPartStrIdx++;
         }
       } else if (channel == CHANNEL_CMD) {
-        updateBranchState(gPartStrBuf, values[0]);
+        updateBranchState(gPartStrBuf, values);
 
         memset(gPartStrBuf, '\0', sizeof(gPartStrBuf));
         gPartStrIdx = 0;
       } else if (channel == CHANNEL_ANIM_COLOR) {
-        if (type == 'L') {
-          animColor(values, 0, 5);
-        } else {
-          animColor(values, 0, 7);
-        }
+        animColor(values, 0, 7);
       }
     } else {
       printLcd(17, 4, "ERR", 3);
@@ -240,7 +226,7 @@ void loop() {
 
   int n = sizeof(gBranchStatus) / sizeof(gBranchStatus[0]);
   for (int i = 0; i < n; i++) {
-    if (gBranchStatus[i].buildState == BUILDING) {
+    if (strcmp(gBranchStatus[i].buildState, "...") == 0) {
       refreshLcdLine(i);
     }
   }
