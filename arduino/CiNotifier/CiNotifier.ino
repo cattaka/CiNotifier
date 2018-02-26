@@ -1,6 +1,6 @@
 #include <SPI.h>
-#include <LiquidCrystal.h>
 #include <SakuraIO.h>
+#include "SPILiquidCrystal.h"
 
 #define PIN_R 3
 #define PIN_G 5
