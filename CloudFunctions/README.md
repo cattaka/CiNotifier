@@ -14,11 +14,8 @@ $ node test_run.js <passphrase> <branch_name> <build_state>
 #### HOW-TO DEPLOY
 
 ```sh
-$ gsutil ls # CHECK YOUR BUCKET_NAME
-$ export BUCKET_NAME=[your-bucke-name]
 $ gcloud beta functions deploy \
   ci_notifier \
-  --stage-bucket $BUCKET_NAME \
   --trigger-http
 ```
 
