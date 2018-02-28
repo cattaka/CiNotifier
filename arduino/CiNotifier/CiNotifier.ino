@@ -170,6 +170,8 @@ void setup()
     int connectionStatus = sakuraio.getConnectionStatus();
     if ( (connectionStatus & 0x80) == 0x80 ) break;
 #ifdef DEBUG
+    lcd.setCursor(0, 2);
+    lcd.print(connectionStatus);
     Serial.print("connection_status=");
     Serial.println(connectionStatus, HEX);
 #endif
@@ -241,4 +243,3 @@ void loop() {
   gLoopCount++;
   delay(1000);
 }
-
