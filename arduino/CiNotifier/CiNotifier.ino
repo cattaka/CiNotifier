@@ -167,8 +167,16 @@ void setup()
   printLcd(0, 1, "initializing...", 20);
   for (;;) {
     rainbow(600, 1);
-    if ( (sakuraio.getConnectionStatus() & 0x80) == 0x80 ) break;
+    int connectionStatus = sakuraio.getConnectionStatus();
+    if ( (connectionStatus & 0x80) == 0x80 ) break;
+#ifdef DEBUG
+    Serial.print("connection_status=");
+    Serial.println(connectionStatus, HEX);
+#endif
   }
+#ifdef DEBUG
+  Serial.println();
+#endif
   printLcd(0, 1, "initializing...done", 20);
   animColor(BOOT_COLOR, 0, sizeof(BOOT_COLOR) / sizeof(BOOT_COLOR[0]));
   setColor(0x00, 0x00, 0x00);
